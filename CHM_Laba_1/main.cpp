@@ -125,15 +125,15 @@ public:
 vector<double> function(const vector<double>& x){
     vector<double> y;
     for(int i = 0; i < x.size(); i++){
-        y.push_back(pow((x[i] - 1), 2));
+        y.push_back(pow(x[i], 2) + x[i]);
     }
     return y;
 }
 double f(double x){
-    return pow((x-1),2) ;
+    return pow(x,2) + x ;
 }
 double f_f_der(double x){
-    return 2*x - 2;
+    return 2*x + 1;
 }
 double f_s_der(double x){
     return 2;
@@ -247,7 +247,7 @@ vector<double> first_der(vector<double> dots){
 int main() {
     double a, b, r;
     int n;
-    vector<double> dots = {-1, 0, 1};
+    vector<double> dots = {0, 1, 2};
     cout << "Введите a (начало отрезка): ";
     cin >> a;
     
