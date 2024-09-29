@@ -229,7 +229,7 @@ vector<vector<double>> approximate(vector<double> x, CubicSpline spline){
     vector<double> string;
     for(double element : x){
         string.push_back(fabs((f(element)) - (spline.interpolate(element))));
-        string.push_back(fabs((f(element)) - (spline.first_derivative(element))));
+        string.push_back(fabs((f_f_der(element)) - (spline.first_derivative(element))));
         result.push_back(string);
         string.clear();
     }
