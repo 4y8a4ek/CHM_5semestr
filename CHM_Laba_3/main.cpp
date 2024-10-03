@@ -148,7 +148,6 @@ int main()
         for (int i = 0; i < n; ++i)
         {
             inputFile >> y[i];
-            cout << y[i] << endl; 
         }
         break;
     case 2:
