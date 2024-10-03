@@ -13,7 +13,7 @@ int main()
 
     auto f = [](double x)
     {
-        return -2 / pow(x, 2);
+        return -2.0 / pow(x, 2);
     };
 
     double a;
@@ -38,7 +38,7 @@ int main()
     pair<double, int> resultTri = adaptiveIntegration(integrateTriangles, f, a, b, epsilon);
     auto endTri = chrono::high_resolution_clock::now();
     chrono::duration<double, micro> timeTri = endTri - startTri;
-    cout << "Метод треугольников (трапеций): результат = " << resultTri.first << ", n = " << resultTri.second << ", время = " << timeTri.count() << " мс" << endl;
+    cout << "Метод трапеций: результат = " << resultTri.first << ", n = " << resultTri.second << ", время = " << timeTri.count() << " мс" << endl;
 
     auto startParab = chrono::high_resolution_clock::now();
     pair<double, int> resultParab = adaptiveIntegration(integrateParabolas, f, a, b, epsilon);
@@ -51,16 +51,17 @@ int main()
     auto endGauss = chrono::high_resolution_clock::now();
     chrono::duration<double, micro> timeGauss = endGauss - startGauss;
     cout << "Квадратура Гаусса: результат = " << resultGauss.first << ", количество сегментов n = " << resultGauss.second << ", время = " << timeGauss.count() << " мс" << endl;
-    
-    auto func = [](double x){
-        return (pow(x, 2) - 1.0);
+
+    auto func = [](double x)
+    {
+        return x - 1;
     };
-    
+
     int n;
     cout << "Введите количество узлов интегрирования N: ";
-    cin >> n; 
+    cin >> n;
 
-    double result = integrate_with_hermite_lagrange(n, func);
+    double result = integrate_with_hermite(n, func);
 
     cout << "Результат = " << std::setprecision(20) << result << endl;
     return 0;

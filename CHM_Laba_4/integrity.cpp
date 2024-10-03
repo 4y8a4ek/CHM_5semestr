@@ -3,7 +3,6 @@
 #include <functional>
 #include <vector>
 
-
 using namespace std;
 
 double integrateRectangles(const function<double(double)> &f, double &a, double &b, int &n)
@@ -102,82 +101,77 @@ pair<double, int> adaptiveIntegration(const function<double(const function<doubl
     return {current, n};
 }
 
-
-double hermite_polynomial(int n, double &x) {
-    if (n == 0) return 1.0;
-    if (n == 1) return 2.0 * x;
+double hermite_polynomial(int n, double &x)
+{
+    if (n == 0)
+        return 1.0;
+    if (n == 1)
+        return 2.0 * x;
     return 2.0 * x * hermite_polynomial(n - 1, x) - 2.0 * (n - 1) * hermite_polynomial(n - 2, x);
 }
-// Производная полинома Эрмита
-double hermite_polynomial_derivative(int &n, double &x) {
+
+double hermite_polynomial_derivative(int &n, double &x)
+{
     return 2.0 * n * hermite_polynomial(n - 1, x);
 }
-// Найти узлы для квадратуры Эрмита (корни полинома Эрмита)
-vector<double> find_hermite_roots(int &n) {
-    vector<double> roots;
-    for (int i = 0; i < n; ++i) {
-        // Для корней Эрмита используем симметричное распределение для квадратур
-        double x = sqrt(2.0 * (i + 1)) - sqrt(2.0 * (n - i));  // Симметричное расположение корней
-        roots.push_back(x);
+
+vector<double> find_hermite_roots(int &n)
+{
+    vector<double> roots(n);
+    const double tolerance = 1e-10;
+    for (int i = 0; i < n; ++i)
+    {
+        roots[i] = cos(M_PI * (i + 0.75) / (n + 0.5));
+    }
+    for (int i = 0; i < n; ++i)
+    {
+        double x = roots[i];
+        double diff;
+        do
+        {
+            double Hn = hermite_polynomial(n, x);
+            double Hn_prime = hermite_polynomial_derivative(n, x);
+            diff = Hn / Hn_prime;
+            x = x - diff;
+        } while (abs(diff) > tolerance);
+        roots[i] = x;
+    }
+    for (int i = 0; i < n / 2; ++i)
+    {
+        roots[n - i - 1] = -roots[i];
     }
     return roots;
 }
-// Построение интерполяционного многочлена Лагранжа
-double lagrange_interpolation(double &x, const vector<double>& nodes, const vector<double>& values) {
-    int n = nodes.size();
-    double result = 0.0;
-    
-    for (int i = 0; i < n; ++i) {
-        double term = values[i];
-        for (int j = 0; j < n; ++j) {
-            if (i != j) {
-                term *= (x - nodes[j]) / (nodes[i] - nodes[j]);
-            }
-        }
-        result += term;
-    }
-    return result;
-}
-// Вычисление весов для квадратуры Эрмита
-vector<double> compute_weights(int &n, const vector<double>& roots) {
+
+vector<double> compute_weights(int &n, const vector<double> &roots)
+{
     vector<double> weights(n);
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i)
+    {
         double xi = roots[i];
         double Hn_prime = hermite_polynomial_derivative(n, xi);
         weights[i] = 2.0 / (Hn_prime * Hn_prime);
     }
     double sum_weights = 0.0;
-    for (double weight : weights) {
+    for (double weight : weights)
+    {
         sum_weights += weight;
     }
-    
-    // Нормализация весов на сумму
-    for (double& weight : weights) {
+    for (double &weight : weights)
+    {
         weight /= sum_weights;
     }
-
     return weights;
 }
 
-// Квадратурная формула Эрмита с интерполяцией Лагранжа
-double integrate_with_hermite_lagrange(int &n, const function<double(double)> &func) {
-    // Находим корни полинома Эрмита
+double integrate_with_hermite(int &n, const function<double(double)> &func)
+{
     vector<double> roots = find_hermite_roots(n);
-
-    // Вычисляем значения функции в этих узлах
-    vector<double> values(n);
-    for (int i = 0; i < n; ++i) {
-        values[i] = func(roots[i]);
-    }
-
-    // Построим интерполяционный многочлен Лагранжа
     vector<double> weights = compute_weights(n, roots);
     double integral = 0.0;
-    for (int i = 0; i < n; ++i) {
-        double lagrange_value = weights[i] * lagrange_interpolation(roots[i], roots, values);
-        integral += lagrange_value;
+    for (int i = 0; i < n; ++i)
+    {
+        integral += weights[i] * func(roots[i]);
     }
-
-    // Корректируем результат умножением на sqrt(pi)
     return integral * sqrt(M_PI);
 }
