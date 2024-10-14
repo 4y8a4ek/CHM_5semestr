@@ -6,8 +6,10 @@
 
 using namespace std;
 
+vector<vector<double>> gaussWeights = {{1.0, 1.0}, {(5.0 / 9.0), (8.0 / 9.0), (5.0 / 9.0)}, {(18 - sqrt(36)) / 36, (18 + sqrt(36)) / 36, (18 + sqrt(36)) / 36, (18 - sqrt(36)) / 36}};
+vector<vector<double>> gaussNodes = {{-1 / sqrt(3), 1 / sqrt(3)}, {-sqrt((3.0 / 5.0)), 0.0, sqrt((3.0 / 5.0))}, {-sqrt((3 + 2 * sqrt(6 / 5)) / 7), -sqrt((3 - 2 * sqrt(6 / 5)) / 7), sqrt((3 - 2 * sqrt(6 / 5)) / 7), sqrt((3 + 2 * sqrt(6 / 5)) / 7)}};
 
-double Integrator::gaussianQuadrature(const function<double(double)> &f, double &a, double &b, vector<double> &gaussWeights,vector<double> &gaussNodes)
+double Integrator::gaussianQuadrature(const function<double(double)> &f, const double &a, const double &b, const vector<double> &gaussWeights, const vector<double> &gaussNodes)
 {
     double sum = 0.0;
     double x;
@@ -19,7 +21,7 @@ double Integrator::gaussianQuadrature(const function<double(double)> &f, double 
     return sum * (b - a) / 2;
 }
 
-double Integrator::integrateGauss(const function<double(double)> &f, double &a, double &b, int &segments, vector<double> &gaussWeights,vector<double> &gaussNodes)
+double Integrator::integrateGauss(const function<double(double)> &f, const double &a, const double &b, const int &segments, const vector<double> &gaussWeights, const vector<double> &gaussNodes)
 {
     double segmentWidth = (b - a) / segments;
     double totalResult = 0.0;
@@ -34,7 +36,7 @@ double Integrator::integrateGauss(const function<double(double)> &f, double &a, 
     return totalResult;
 }
 
-double Integrator::integrateRectangles(const function<double(double)> &f, double &a, double &b, int &n)
+double Integrator::integrateRectangles(const function<double(double)> &f, const double &a, const double &b, int &n)
 {
     double h = (b - a) / n;
     double sum = 0.0;
@@ -47,7 +49,7 @@ double Integrator::integrateRectangles(const function<double(double)> &f, double
     return sum;
 }
 
-double Integrator::integrateTriangles(const function<double(double)> &f, double &a, double &b, int &n)
+double Integrator::integrateTriangles(const function<double(double)> &f, const double &a, const double &b, int &n)
 {
     double h = (b - a) / n;
     double sum = 0.0;
@@ -60,7 +62,7 @@ double Integrator::integrateTriangles(const function<double(double)> &f, double 
     }
     return sum;
 }
-double Integrator::integrateParabolas(const function<double(double)> &f, double &a, double &b, int &n)
+double Integrator::integrateParabolas(const function<double(double)> &f, const double &a, const double &b, int &n)
 {
     if (n % 2 != 0)
         n++;
@@ -83,14 +85,70 @@ double Integrator::integrateParabolas(const function<double(double)> &f, double 
     return sum * h / 3;
 }
 
-vector<pair<double, int>> Integrator::adaptiveIntegration(double (Integrator::*method)(const std::function<double(double)> &, double &, double &, int &), const std::function<double(double)> &f, double &a, double &b, int n)
+vector<pair<double, int>> Integrator::adaptiveIntegration(double (Integrator::*method)(const std::function<double(double)> &, const double &, const double &, int &), const std::function<double(double)> &f, const double &a, const double &b, int n)
 {
     vector<pair<double, int>> result;
     double current;
-    for(int i = 0; i < 3; i++){
+    for (int i = 0; i < 4; i++)
+    {
         current = (this->*method)(f, a, b, n);
         result.push_back(make_pair(current, n));
         n *= 2;
     }
     return result;
+}
+
+void Integrator::performIntegration(const IntegrationMethod &method, const function<double(double)> &f, const double &a, const double &b, const int &n)
+{
+    Integrator integrator;
+    std::vector<std::pair<double, int>> results;
+
+    switch (method)
+    {
+    case IntegrationMethod::Rectangles:
+        results = integrator.adaptiveIntegration(Integrator::integrateRectangles, f, a, b, n);
+        cout << "Метод прямоугольников:" << endl;
+        break;
+
+    case IntegrationMethod::Triangles:
+        results = integrator.adaptiveIntegration(Integrator::integrateTriangles, f, a, b, n);
+        cout << "Метод трапеций:" << endl;
+        break;
+
+    case IntegrationMethod::Parabolas:
+        results = integrator.adaptiveIntegration(Integrator::integrateParabolas, f, a, b, n);
+        cout << "Метод парабол (Симпсона):" << endl;
+        break;
+    }
+    for (const auto &result : results)
+    {
+        cout << " Результат = " << result.first << ", n = " << result.second << endl;
+    }
+}
+void Integrator::performGaussIntegration(const IntegrateGauss &method, const function<double(double)> &f, const double &a, const double &b, const int &n)
+{
+    int curr_n = n;
+    Integrator integrator;
+    vector<pair<double, int>> results;
+    for (int i = 0; i < 4; i++)
+    {
+        switch (method)
+        {
+        case IntegrateGauss::Gauss_two_dots:
+            results.push_back(make_pair(integrator.integrateGauss(f, a, b, n, gaussWeights[0], gaussNodes[0]), curr_n));
+            break;
+        case IntegrateGauss::Gauss_three_dots:
+            results.push_back(make_pair(integrator.integrateGauss(f, a, b, n, gaussWeights[1], gaussNodes[1]), curr_n));
+            break;
+
+        case IntegrateGauss::Gauss_four_dots:
+            results.push_back(make_pair(integrator.integrateGauss(f, a, b, n, gaussWeights[2], gaussNodes[2]), curr_n));
+            break;
+        }
+        curr_n *= 2;
+    }
+    for (const auto &result : results)
+    {
+        cout << " Результат = " << result.first << ", n = " << result.second << endl;
+    }
 }
