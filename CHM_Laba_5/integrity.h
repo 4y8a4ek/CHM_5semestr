@@ -2,6 +2,7 @@
 #include <cmath>
 #include <functional>
 #include <vector>
+#include <iomanip>
 
 enum class IntegrationMethod
 {

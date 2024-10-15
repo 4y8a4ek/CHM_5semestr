@@ -1,7 +1,3 @@
-#include <iostream>
-#include <cmath>
-#include <functional>
-#include <vector>
 #include "integrity.h"
 
 using namespace std;
@@ -122,7 +118,7 @@ void Integrator::performIntegration(const IntegrationMethod &method, const funct
     }
     for (const auto &result : results)
     {
-        cout << " Результат = " << result.first << ", n = " << result.second << endl;
+        cout << std::setprecision(15) << " Результат = " << result.first << ", n = " << result.second << endl;
     }
 }
 void Integrator::performGaussIntegration(const IntegrateGauss &method, const function<double(double)> &f, const double &a, const double &b, const int &n)
@@ -135,20 +131,20 @@ void Integrator::performGaussIntegration(const IntegrateGauss &method, const fun
         switch (method)
         {
         case IntegrateGauss::Gauss_two_dots:
-            results.push_back(make_pair(integrator.integrateGauss(f, a, b, n, gaussWeights[0], gaussNodes[0]), curr_n));
+            results.push_back(make_pair(integrator.integrateGauss(f, a, b, curr_n, gaussWeights[0], gaussNodes[0]), curr_n));
             break;
         case IntegrateGauss::Gauss_three_dots:
-            results.push_back(make_pair(integrator.integrateGauss(f, a, b, n, gaussWeights[1], gaussNodes[1]), curr_n));
+            results.push_back(make_pair(integrator.integrateGauss(f, a, b, curr_n, gaussWeights[1], gaussNodes[1]), curr_n));
             break;
 
         case IntegrateGauss::Gauss_four_dots:
-            results.push_back(make_pair(integrator.integrateGauss(f, a, b, n, gaussWeights[2], gaussNodes[2]), curr_n));
+            results.push_back(make_pair(integrator.integrateGauss(f, a, b, curr_n, gaussWeights[2], gaussNodes[2]), curr_n));
             break;
         }
         curr_n *= 2;
     }
     for (const auto &result : results)
     {
-        cout << " Результат = " << result.first << ", n = " << result.second << endl;
+        cout << std::setprecision(15) << " Результат = " << result.first << ", n = " << result.second << endl;
     }
 }

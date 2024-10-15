@@ -13,7 +13,7 @@ int main()
 
     auto f = [](double x)
     {
-        return -2.0 / pow(x, 2);
+        return - 2 / pow(x, 2);
     };
 
     double b;
@@ -45,6 +45,8 @@ int main()
     IntegrateGauss gaussMethod = static_cast<IntegrateGauss>(action);
     cout << "Метод квадратуры Гаусса :" << endl;
     integrator.performGaussIntegration(gaussMethod, f, a, b, n);
+
+    
 
     return 0;
 }
